@@ -1,0 +1,5 @@
+fastapi
+uvicorn
+faker
+sqlalchemy
+psycopg2-binary

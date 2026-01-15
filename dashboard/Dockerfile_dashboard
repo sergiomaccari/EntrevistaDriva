@@ -1,0 +1,15 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Copia o arquivo com o novo nome
+COPY requirements_dashboard.txt .
+
+# Instala usando o novo nome
+RUN pip install --no-cache-dir -r requirements_dashboard.txt
+
+# Copia o restante do código
+COPY . .
+
+# Roda o Streamlit na porta 8501
+CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
