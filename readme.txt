@@ -1,3 +1,5 @@
+VÍDEO: https://www.youtube.com/watch?v=_yXCtXLl4Wg
+
 Este projeto representa a etapa técnica do processo seletivo para a vaga de Estagiário em Automação da empresa Driva, sendo uma Pipeline de dados End-to-End para monitorar a operação de enriquecimento de dados.
 O sistema simula um fluxo completo de enriquecimento de dados, contendo a ingestão através de uma API transacional, armazenamento Bronze/Gold, e exposição em API de Analytics com visualização em um Dashboard.
 
