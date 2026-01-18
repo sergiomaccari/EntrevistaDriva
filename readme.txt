@@ -27,7 +27,7 @@ Como executar
 
 1) Clone o repositório:
 
-git clone https://github.com/seu-usuario/driva-analytics.git
+git clone https://github.com/sergiomaccari/EntrevistaDriva
 cd driva-analytics
 
 2) Suba os conteiners:
