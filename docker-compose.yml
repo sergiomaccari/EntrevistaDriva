@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Serviço 1: Banco de Dados PostgreSQL
+  #PostgreSQL
   postgres:
     image: postgres:14
     container_name: driva_postgres
@@ -21,7 +21,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # Serviço 2: n8n (Automação)
+  # n8n
   n8n:
     image: n8nio/n8n
     container_name: driva_n8n
@@ -39,18 +39,23 @@ services:
     depends_on:
       - postgres
 
-  # Serviço 3: Sua API
+  # API
   api:
     build: ./api
     container_name: driva_api
     ports:
       - "3000:3000"
+    environment:
+      - DB_HOST=driva_postgres
+      - DB_NAME=driva_db
+      - DB_USER=driva_user
+      - DB_PASSWORD=driva_password
     networks:
       - driva-network
     depends_on:
       - postgres
 
-  # Serviço 4: Dashboard (Configurado para ler Dockerfile específico)
+  # Dashboard
   dashboard:
     build:
       context: ./dashboard

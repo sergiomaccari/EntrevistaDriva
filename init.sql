@@ -1,12 +1,12 @@
--- Criação da tabela BRONZE (Dados Brutos)
+-- Tabela Bronze
 CREATE TABLE IF NOT EXISTS bronze_enrichments (
-    id TEXT PRIMARY KEY, -- ID original do dado
-    raw_data JSONB, -- O dado completo em formato JSON para garantir fidelidade
-    dw_ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Quando entrou no DW
-    dw_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Quando foi atualizado
+    id TEXT PRIMARY KEY,
+    raw_data JSONB,
+    dw_ingested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dw_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Criação da tabela GOLD (Dados Refinados e Traduzidos)
+-- Tabela Gold
 CREATE TABLE IF NOT EXISTS gold_enrichments (
     id_enriquecimento TEXT PRIMARY KEY,
     id_workspace TEXT,
@@ -16,12 +16,10 @@ CREATE TABLE IF NOT EXISTS gold_enrichments (
     status_processamento TEXT,
     data_criacao TIMESTAMP,
     data_atualizacao TIMESTAMP,
-    -- Campos Calculados
     duracao_processamento_minutos INTEGER,
     tempo_por_contato_minutos FLOAT,
     processamento_sucesso BOOLEAN,
     categoria_tamanho_job TEXT,
     necessita_reprocessamento BOOLEAN,
-    -- Controle DW
     data_atualizacao_dw TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

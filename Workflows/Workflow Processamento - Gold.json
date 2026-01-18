@@ -1,129 +1,6 @@
 {
-  "name": "My workflow",
+  "name": "Workflow Processamento - Gold",
   "nodes": [
-    {
-      "parameters": {
-        "url": "http://api:3000/v1/enrichments",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        208,
-        0
-      ],
-      "id": "e6d1e6cb-7f0c-4257-bace-d8f547d1a5ac",
-      "name": "HTTP Request",
-      "retryOnFail": true,
-      "waitBetweenTries": 2000,
-      "maxTries": 5,
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "25Jiryqjfe6r2vdt",
-          "name": "Header Auth account"
-        }
-      },
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "fieldToSplitOut": "data",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.splitOut",
-      "typeVersion": 1,
-      "position": [
-        832,
-        0
-      ],
-      "id": "ae63c1e1-1dfc-416b-a6a7-0b74dc6394c0",
-      "name": "Split Out"
-    },
-    {
-      "parameters": {
-        "operation": "upsert",
-        "schema": {
-          "__rl": true,
-          "mode": "list",
-          "value": "public"
-        },
-        "table": {
-          "__rl": true,
-          "value": "bronze_enrichments",
-          "mode": "list",
-          "cachedResultName": "bronze_enrichments"
-        },
-        "columns": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "id": "={{ $json.id }}",
-            "raw_data": "={{ $json }}",
-            "dw_updated_at": "={{ $now }}"
-          },
-          "matchingColumns": [
-            "id"
-          ],
-          "schema": [
-            {
-              "id": "id",
-              "displayName": "id",
-              "required": true,
-              "defaultMatch": true,
-              "display": true,
-              "type": "string",
-              "canBeUsedToMatch": true,
-              "removed": false
-            },
-            {
-              "id": "raw_data",
-              "displayName": "raw_data",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "object",
-              "canBeUsedToMatch": false
-            },
-            {
-              "id": "dw_ingested_at",
-              "displayName": "dw_ingested_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": false
-            },
-            {
-              "id": "dw_updated_at",
-              "displayName": "dw_updated_at",
-              "required": false,
-              "defaultMatch": false,
-              "display": true,
-              "type": "dateTime",
-              "canBeUsedToMatch": false
-            }
-          ],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": false
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.6,
-      "position": [
-        1040,
-        0
-      ],
-      "id": "cda335a3-1f19-4748-a75e-34ed1ab9f649",
-      "name": "Insert or update rows in a table",
-      "credentials": {
-        "postgres": {
-          "id": "gfcuWqeff0aHRQEH",
-          "name": "Postgres account"
-        }
-      }
-    },
     {
       "parameters": {
         "jsCode": "// Loop por cada item que veio do Banco de Dados\nreturn items.map(item => {\n  // Pegamos o JSON original que estava salvo na coluna raw_data\n  const raw = item.json.raw_data;\n\n  // 1. Cálculos de Datas\n  const criacao = new Date(raw.created_at);\n  const atualizacao = new Date(raw.updated_at);\n  // Diferença em minutos\n  const duracaoMinutos = Math.round((atualizacao - criacao) / 60000);\n\n  // 2. Cálculo de Tempo por Contato\n  let tempoPorContato = 0;\n  if (raw.total_contacts > 0) {\n    tempoPorContato = duracaoMinutos / raw.total_contacts;\n  }\n\n  // 3. Categoria de Tamanho (Regra de Negócio)\n  let categoria = 'PEQUENO';\n  if (raw.total_contacts > 1000) categoria = 'MUITO_GRANDE';\n  else if (raw.total_contacts > 500) categoria = 'GRANDE';\n  else if (raw.total_contacts >= 100) categoria = 'MEDIO';\n\n  // 4. Traduções\n  const statusMap = {\n    'COMPLETED': 'CONCLUIDO',\n    'PROCESSING': 'EM_PROCESSAMENTO',\n    'FAILED': 'FALHOU',\n    'CANCELED': 'CANCELADO'\n  };\n  \n  const tipoMap = {\n    'COMPANY': 'EMPRESA',\n    'PERSON': 'PESSOA'\n  };\n\n  // 5. Montamos o Objeto final da Tabela GOLD\n  return {\n    json: {\n      id_enriquecimento: raw.id,\n      id_workspace: raw.id_workspace,\n      nome_workspace: raw.workspace_name,\n      total_contatos: raw.total_contacts,\n      tipo_contato: tipoMap[raw.contact_type] || raw.contact_type,\n      status_processamento: statusMap[raw.status] || raw.status,\n      data_criacao: raw.created_at,\n      data_atualizacao: raw.updated_at,\n      \n      // Campos Calculados\n      duracao_processamento_minutos: duracaoMinutos,\n      tempo_por_contato_minutos: tempoPorContato,\n      processamento_sucesso: raw.status === 'COMPLETED',\n      categoria_tamanho_job: categoria,\n      necessita_reprocessamento: ['FAILED', 'CANCELED'].includes(raw.status),\n      \n      // Carimbo de hora atual\n      data_atualizacao_dw: new Date().toISOString()\n    }\n  };\n});"
@@ -131,10 +8,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1136,
+        0,
         0
       ],
-      "id": "cf31cb21-e1be-4e3b-a68d-a4f40d0b8e78",
+      "id": "874e46f1-3793-42af-a302-55ce1882eb3d",
       "name": "Code in JavaScript"
     },
     {
@@ -300,125 +177,34 @@
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
       "position": [
-        1344,
+        208,
         0
       ],
-      "id": "1a48a8a4-326d-4a3a-abc0-751ca65a5f34",
+      "id": "13d4e4e1-a621-48a1-a3de-9d92b50faa55",
       "name": "Insert or update rows in a table1",
       "credentials": {
         "postgres": {
-          "id": "gfcuWqeff0aHRQEH",
+          "id": "mq0CV2VySgH4cUCb",
           "name": "Postgres account"
         }
       }
     },
     {
       "parameters": {
-        "rule": {
-          "interval": [
-            {
-              "field": "minutes"
-            }
-          ]
-        }
+        "inputSource": "passthrough"
       },
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.3,
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
       "position": [
-        -48,
+        -224,
         0
       ],
-      "id": "017b9c20-31f2-4a14-83b9-3db7ae681901",
-      "name": "Schedule Trigger"
-    },
-    {
-      "parameters": {
-        "jsCode": "// 1. Descobrir quantas páginas existem (vem do meta da API)\nconst totalPages = items[0].json.meta.total_pages; \nconst paginas = [];\n\n// 2. Criar uma \"ficha\" para cada página (Ex: 1, 2, 3... 100)\nfor (let i = 1; i <= totalPages; i++) {\n  paginas.push({\n    json: {\n      numero_da_pagina: i\n    }\n  });\n}\n\n// 3. Retornar essa lista para o n8n processar uma por uma\nreturn paginas;"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        416,
-        0
-      ],
-      "id": "95fcbb27-7ae1-406d-9d9a-1635e01cf175",
-      "name": "Code in JavaScript1"
-    },
-    {
-      "parameters": {
-        "url": "http://api:3000/v1/enrichments",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendQuery": true,
-        "queryParameters": {
-          "parameters": [
-            {
-              "name": "limit",
-              "value": "50"
-            },
-            {
-              "name": "page",
-              "value": "={{ $json.numero_da_pagina }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.3,
-      "position": [
-        624,
-        0
-      ],
-      "id": "e0adbd16-efb0-427c-a04b-d05e3a9005f8",
-      "name": "HTTP Request1",
-      "retryOnFail": true,
-      "maxTries": 5,
-      "waitBetweenTries": 2000,
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "25Jiryqjfe6r2vdt",
-          "name": "Header Auth account"
-        }
-      },
-      "onError": "continueRegularOutput"
+      "id": "3213fc6e-1798-484d-9aea-8184de7e562b",
+      "name": "When Executed by Another Workflow"
     }
   ],
   "pinData": {},
   "connections": {
-    "HTTP Request": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Split Out": {
-      "main": [
-        [
-          {
-            "node": "Insert or update rows in a table",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Insert or update rows in a table": {
-      "main": [
-        [
-          {
-            "node": "Code in JavaScript",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Code in JavaScript": {
       "main": [
         [
@@ -430,33 +216,11 @@
         ]
       ]
     },
-    "Schedule Trigger": {
+    "When Executed by Another Workflow": {
       "main": [
         [
           {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code in JavaScript1": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request1",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "HTTP Request1": {
-      "main": [
-        [
-          {
-            "node": "Split Out",
+            "node": "Code in JavaScript",
             "type": "main",
             "index": 0
           }
@@ -469,11 +233,10 @@
     "executionOrder": "v1",
     "availableInMCP": false
   },
-  "versionId": "5bcb2ff4-e3d3-4496-ba58-34896cd571bd",
+  "versionId": "5d104b4b-77e6-4e53-9bd1-29679d32a6fc",
   "meta": {
-    "templateCredsSetupCompleted": true,
-    "instanceId": "10e097204a1f05f162060f2d9c94bd83713275a94c04aa803acb0506757afcc9"
+    "instanceId": "b9e998059bea9beb6a0df031d9e07d648a2c64904f1deb0ef635f24f3d4ee8e4"
   },
-  "id": "Ah89IrbEBrMFhkKkV9c6r",
+  "id": "tRGtGz2O_M83xwe-m1-rC",
   "tags": []
 }

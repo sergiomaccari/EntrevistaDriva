@@ -1,0 +1,120 @@
+{
+  "name": "Worflow Orquestrador",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b3237b67-8082-4aa8-b20c-4b2a1e9c523a",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "abzMZaqe3IZl_A6BEvF7W",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/abzMZaqe3IZl_A6BEvF7W",
+          "cachedResultName": "Workflow Ingestão Bronze"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "ff3d2a67-13b1-4e70-9871-494ac4144938",
+      "name": "Call 'Workflow Ingestão Bronze'"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "tRGtGz2O_M83xwe-m1-rC",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/tRGtGz2O_M83xwe-m1-rC",
+          "cachedResultName": "Workflow Processamento - Gold"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        0
+      ],
+      "id": "0c949e17-a5d7-4fc9-8693-333a1237f724",
+      "name": "Call 'Workflow Processamento - Gold'"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Call 'Workflow Ingestão Bronze'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call 'Workflow Ingestão Bronze'": {
+      "main": [
+        [
+          {
+            "node": "Call 'Workflow Processamento - Gold'",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "7fcd9f83-f19c-419f-9b52-9eb7df455d54",
+  "meta": {
+    "instanceId": "b9e998059bea9beb6a0df031d9e07d648a2c64904f1deb0ef635f24f3d4ee8e4"
+  },
+  "id": "fwGrqJa9mJ8ATvms5Z0v8",
+  "tags": []
+}
